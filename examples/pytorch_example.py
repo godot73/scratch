@@ -4,6 +4,11 @@ from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision.transforms import ToTensor
 
+device = (
+    "cuda" if torch.cuda.is_available()
+    #     else "mps"
+    #     if torch.backends.mps.is_available()
+    else "cpu")
 
 class NeuralNetwork(nn.Module):
 
@@ -20,17 +25,7 @@ class NeuralNetwork(nn.Module):
         return logits
 
 
-def get_device() -> str:
-    # Get cpu, gpu or mps device for training.
-    device = (
-        "cuda" if torch.cuda.is_available()
-        #     else "mps"
-        #     if torch.backends.mps.is_available()
-        else "cpu")
-
-
 def build_model() -> nn.Module:
-    device = get_device()
     print(f"Using {device} device")
     model = NeuralNetwork().to(device)
     print(model)
@@ -111,7 +106,7 @@ def train_and_test_model(model):
         print(f"Epoch {t+1}\n-------------------------------")
         _train(train_dataloader, model, loss_fn, optimizer)
         _test(test_dataloader, model, loss_fn)
-        print("Done!")
+    print("Done!")
 
 
 def save_model(model: nn.Module, filename: str) -> None:
@@ -120,7 +115,7 @@ def save_model(model: nn.Module, filename: str) -> None:
 
 
 def load_model(filename: str) -> nn.Module:
-    model = NeuralNetwork().to(get_device())
+    model = NeuralNetwork().to(device)
     model.load_state_dict(torch.load(filename))
     return model
 
@@ -140,6 +135,13 @@ def eval_model(model: nn.Module) -> None:
     ]
 
     model.eval()
+
+    test_data = datasets.FashionMNIST(
+        root="data",
+        train=False,
+        download=True,
+        transform=ToTensor(),
+    )
     x, y = test_data[0][0], test_data[0][1]
     with torch.no_grad():
         x = x.to(device)
