@@ -150,15 +150,12 @@ def eval_model(model: nn.Module) -> None:
         print(f'Predicted: "{predicted}", Actual: "{actual}"')
 
 
-def main():
+def train_and_save_model(filename):
     model = build_model()
     train_and_test_model(model)
-    filename = '/tmp/foo.torch'
     save_model(model, filename)
-
-    loaded_model = load_model(filename)
-    eval_model(loaded_model)
 
 
 if __name__ == '__main__':
-    main()
+    filename = '/tmp/foo.torch'
+    eval_model(load_model(filename))
