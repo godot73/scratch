@@ -70,7 +70,7 @@ def _test(dataloader, model, loss_fn):
     )
 
 
-def train_and_test_model(model):
+def train_and_test_model(model: nn.Module):
     # Download training data from open datasets.
     training_data = datasets.FashionMNIST(
         root="data",
@@ -109,14 +109,14 @@ def train_and_test_model(model):
     print("Done!")
 
 
-def save_model(model: nn.Module, filename: str) -> None:
-    torch.save(model.state_dict(), filename)
-    print("Saved PyTorch Model State to {}".format(filename))
+def save_model(model: nn.Module, torch_filename: str) -> None:
+    torch.save(model.state_dict(), torch_filename)
+    print("Saved PyTorch Model State to {}".format(torch_filename))
 
 
-def load_model(filename: str) -> nn.Module:
+def load_model(torch_filename: str) -> nn.Module:
     model = NeuralNetwork().to(device)
-    model.load_state_dict(torch.load(filename))
+    model.load_state_dict(torch.load(torch_filename))
     return model
 
 
@@ -150,12 +150,28 @@ def eval_model(model: nn.Module) -> None:
         print(f'Predicted: "{predicted}", Actual: "{actual}"')
 
 
-def train_and_save_model(filename):
+def train_and_save_model(torch_filename: str):
     model = build_model()
     train_and_test_model(model)
-    save_model(model, filename)
+    save_model(model, torch_filename)
+
+
+def export_onnx(model: nn.Module, onnx_filename: str) -> None:
+    model_input = torch.zeros(1, 28, 28)
+    torch.onnx.export(
+        model,
+        model_input,
+        onnx_filename,
+        export_params=True,
+        opset_version=10,
+        do_constant_folding=True,
+        input_names = ['input'],
+        output_names = ['output'],
+    )
 
 
 if __name__ == '__main__':
     filename = '/tmp/foo.torch'
-    eval_model(load_model(filename))
+    model = load_model(filename)
+    eval_model(model)
+    export_onnx(model, '/tmp/foo.onnx')
