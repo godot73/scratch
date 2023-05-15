@@ -176,7 +176,8 @@ def make_mlir(model: nn.Module):
     return torch_mlir.compile(
         model,
         example_input,
-        output_type='linalg-on-tensors',
+        # output_type='linalg-on-tensors',
+        output_type='stablehlo',
         use_tracing=True,
     )
 
