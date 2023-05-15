@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
+import torch_mlir
 from torchvision import datasets
 from torchvision.transforms import ToTensor
 
@@ -170,8 +171,20 @@ def export_onnx(model: nn.Module, onnx_filename: str) -> None:
     )
 
 
+def make_mlir(model: nn.Module):
+    example_input = torch.zeros(1, 28, 28)
+    return torch_mlir.compile(
+        model,
+        example_input,
+        output_type='linalg-on-tensors',
+        use_tracing=True,
+    )
+
+
 if __name__ == '__main__':
     filename = '/tmp/foo.torch'
     model = load_model(filename)
     eval_model(model)
-    export_onnx(model, '/tmp/foo.onnx')
+    # export_onnx(model, '/tmp/foo.onnx')
+    print(make_mlir(model))
+
